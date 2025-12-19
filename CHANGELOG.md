@@ -1,5 +1,11 @@
 # Changelog
 
+# [4.2.1](https://gitlab.dockstudios.co.uk/pub/terrareg/compare/v4.2.0...v4.2.1) (2025-12-19)
+
+* Add new flag `REQUIRE_PRESIGNED_URL_AUTHENTICATION` so that downloads will require presigned URLs regardless of authentication requirements.
+* Upgrade to Python 3.13.
+* Add the ability to generate self-signed certifcates.
+
 # [4.2.0](https://gitlab.dockstudios.co.uk/pub/terrareg/compare/v4.1.0...v4.2.0) (2025-05-08)
 
 

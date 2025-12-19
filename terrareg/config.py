@@ -1174,3 +1174,12 @@ class Config:
             return False
 
         raise InvalidBooleanConfigurationError('Boolean config value not valid. Must be one of: true, yes, 1, false, no, 0')
+    
+    @property
+    def REQUIRE_PRESIGNED_URL_AUTHENTICATION(self):
+        """
+        Whether authentication is required to download module sources.
+
+        If enabled, all module downloads (even for public modules) will require authentication.
+        """
+        return self.convert_boolean(os.environ.get('REQUIRE_PRESIGNED_URL_AUTHENTICATION', 'False'))

@@ -1,8 +1,12 @@
-FROM python:3.12-slim
+FROM public.ecr.aws/docker/library/python:3.13-slim
 
-ARG VERSION
+ARG VERSION="4.2.1" \
+    DEFAULT_TERRAFORM_VERSION="1.13.4" \
+    HOME=/app/terrareg
 
 WORKDIR /
+
+RUN useradd -r -m -d /app/terrareg -s /bin/bash terrareg
 
 RUN apt-get update && \
     apt-get install --assume-yes \
@@ -35,14 +39,14 @@ RUN bash -c 'if [ "$(uname -m)" == "aarch64" ]; \
     else \
       arch=amd64; \
     fi; \
-    wget https://github.com/infracost/infracost/releases/download/v0.10.22/infracost-linux-${arch}.tar.gz -O /tmp/infracost.tar.gz && \
+    wget https://github.com/infracost/infracost/releases/download/v0.10.42/infracost-linux-${arch}.tar.gz -O /tmp/infracost.tar.gz && \
     tar -zxvf /tmp/infracost.tar.gz infracost-linux-${arch} && \
     mv infracost-linux-${arch} /usr/local/bin/infracost && \
     chmod +x /usr/local/bin/infracost && \
     rm /tmp/infracost.tar.gz'
 
 # Download tfswitch
-RUN bash -c 'curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/master/install.sh | bash /dev/stdin 1.2.2'
+RUN bash -c 'curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/master/install.sh | bash /dev/stdin 1.7.0'
 
 # Install go
 RUN bash -c 'if [ "$(uname -m)" == "aarch64" ]; \
@@ -51,7 +55,7 @@ RUN bash -c 'if [ "$(uname -m)" == "aarch64" ]; \
     else \
       arch=amd64; \
     fi; \
-    wget https://go.dev/dl/go1.20.10.linux-${arch}.tar.gz -O /tmp/go.tar.gz && \
+    wget https://go.dev/dl/go1.25.3.linux-${arch}.tar.gz -O /tmp/go.tar.gz && \
     tar -zxvf /tmp/go.tar.gz -C /usr/local && \
     rm /tmp/go.tar.gz'
 ENV PATH=$PATH:/usr/local/go/bin
@@ -63,14 +67,14 @@ RUN bash -c 'if [ "$(uname -m)" == "aarch64" ]; \
     else \
       arch=amd64; \
     fi; \
-    wget https://github.com/hashicorp/terraform-plugin-docs/releases/download/v0.16.0/tfplugindocs_0.16.0_linux_${arch}.zip -O /tmp/tfplugindocs.zip && \
+    wget https://github.com/hashicorp/terraform-plugin-docs/releases/download/v0.24.0/tfplugindocs_0.24.0_linux_${arch}.zip -O /tmp/tfplugindocs.zip && \
     unzip /tmp/tfplugindocs.zip tfplugindocs && \
     mv tfplugindocs /usr/local/bin/ && \
     chmod +x /usr/local/bin/tfplugindocs && \
     rm /tmp/tfplugindocs.zip'
 
 WORKDIR /app
-COPY pyproject.toml poetry.lock .
+COPY pyproject.toml poetry.lock ./
 ARG PYPI_PROXY
 RUN if test ! -z "$PYPI_PROXY"; then pip_args="--index=$PYPI_PROXY --trusted-host=$(echo $PYPI_PROXY | sed 's#https*://##g' | sed 's#/.*##g')"; else pip_args=""; fi; \
     http_proxy= https_proxy="" pip install poetry $pip_args
@@ -107,13 +111,21 @@ COPY alembic.ini .
 COPY terrareg.py .
 COPY terrareg terrareg
 COPY scripts scripts
+
 RUN echo "$VERSION" > terrareg/version.txt
 
 # Copy licenses for JS/CSS
 RUN mkdir licenses/static
 RUN bash -c 'for n in js css; do pushd /app/terrareg/static/$n; for i in *; do if [ -d $i ]; then mkdir /app/licenses/static/$i; cp $i/LICENSE /app/licenses/static/$i/; fi; done; popd; done'
+RUN rm -rf /var/lib/apt/lists/ \
+    && chown -R terrareg:terrareg /app
 
 ENV MANAGE_TERRAFORM_RC_FILE=True
+
+USER terrareg
+
+RUN tfswitch $DEFAULT_TERRAFORM_VERSION \
+    && echo 'export PATH="$PATH:/app/terrareg/bin:/app/bin"' >> /app/terrareg/.bashrc
 
 EXPOSE 5000
 
