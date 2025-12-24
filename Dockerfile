@@ -1,7 +1,7 @@
 FROM public.ecr.aws/docker/library/python:3.13-slim
 
 ARG VERSION="4.2.1" \
-    DEFAULT_TERRAFORM_VERSION="1.13.4" \
+    DEFAULT_TERRAFORM_VERSION="1.13.5" \
     HOME=/app/terrareg
 
 WORKDIR /
