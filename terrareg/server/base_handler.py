@@ -36,7 +36,9 @@ class BaseHandler:
             VERIFIED_MODULE_LABEL=terrareg.config.Config().VERIFIED_MODULE_LABEL,
             SITE_WARNING=terrareg.config.Config().SITE_WARNING,
             csrf_token=terrareg.csrf.get_csrf_token(),
-            theme_path=self._get_theme_path()
+            theme_path=self._get_theme_path(),
+            terrareg_custom_button_url=terrareg.config.Config().CUSTOM_BUTTON_URL,
+            terrareg_custom_button_text=terrareg.config.Config().CUSTOM_BUTTON_TEXT
         )
 
     def _module_provider_404(self, namespace: terrareg.models.Namespace,

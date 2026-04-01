@@ -1963,7 +1963,13 @@ class ProviderLogo:
             'tos': 'All \'Vault\' modules are designed to work with HashiCorp Vault. Terrareg and modules hosted within it are in no way affiliated with, nor endorsed by, HashiCorp. HashiCorp, HashiCorp Vault and the HashiCorp Vault logo are trademarks of HashiCorp.',
             'alt': 'Hashicorp Vault',
             'link': '#'
-        }
+        },
+        'fortios': {
+            'source': '/static/images/fortinet.png',
+            'tos': 'All \'FortiOS\' modules are designed to work with Fortinet FortiOS. Terrareg and modules hosted within it are in no way affiliated with, nor endorsed by, Fortinet. Fortinet, Fortinet FortiOS and the Fortinet FortiOS logo are trademarks of Fortinet.',
+            'alt': 'Fortinet FortiOS',
+            'link': '#'
+        },
     }
 
     @staticmethod
@@ -3949,7 +3955,7 @@ class ModuleVersion(TerraformSpecsObject):
             url = f'/v1/terrareg/modules/{self.id}'
 
             # If authentication is required, generate pre-signed URL
-            if not config.ALLOW_UNAUTHENTICATED_ACCESS:
+            if not config.ALLOW_UNAUTHENTICATED_ACCESS or config.REQUIRE_PRESIGNED_URL_AUTHENTICATION:
                 presign_key = TerraformSourcePresignedUrl.generate_presigned_key(url=url)
                 url = f'{url}/{presign_key}'
             
